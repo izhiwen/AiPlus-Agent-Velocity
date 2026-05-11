@@ -1,103 +1,110 @@
 # AiPlus Agent Velocity
 [中文 README](README.zh-CN.md)
 
-## The Problem
+## The pain
 
-Agents mis-bill their work in human-engineer hours, badly mismatched with reality.
+You ask the agent to do a refactor. It says **"five hours"**. You plan your
+afternoon around it. Twenty minutes later, it reports completion.
 
-You ask for a refactor. The agent says five hours. You plan your afternoon around
-it. Twenty minutes later, the agent reports completion. Next week, a similar task
-gets the same five-hour estimate. Again, twenty minutes. No one keeps the score,
-so the same over-estimate happens again next week. After a month of this, you
-stop trusting any estimate the agent gives you.
+Next week, a similar task. The agent says five hours again. Again it finishes
+in twenty minutes. After a month, you stop trusting any estimate the agent
+gives you, and you also stop scheduling the rest of your day around AI work
+because the numbers feel made up.
 
-## The Solution
+The cause is straightforward: the agent estimates in **human-engineer hours**
+because that is what its training data anchors on. It is mis-billing its own
+work, and nobody is keeping the score.
 
-AiPlus Agent Velocity records every estimate and actual completion time as local
-JSONL under `.aiplus/velocity/`. It tracks:
+## What we do about it
 
-- Human estimates (what the agent initially predicts)
-- Actual completion times (how long it really took)
-- Task types (refactoring, feature, bugfix, review)
-- Model and workflow labels (for context)
+AiPlus Agent Velocity records every estimate and every actual completion as
+local JSONL under `.aiplus/velocity/`. It learns from your own history what
+the AI-native time really is, and feeds that back into the next estimate.
 
-The system detects **human-time bias** — the tendency to anchor estimates on
-engineer hours instead of agent minutes. After accumulating a few records, it
-produces:
+The records cover:
 
-- **p50 estimate** — The median AI-native time for this task type
-- **p90 estimate** — The conservative upper bound
-- **Next-estimate adjustment** — A multiplier to apply to future human-style
-  estimates
+- **Human estimate** — what the agent first predicted, in human-engineer time
+- **Actual completion** — how long it really took, end to end
+- **Task type** — refactor, feature, bug fix, review
+- **Model + workflow labels** — for context, so a "feature" on Opus 4.7 with
+  a heavy review loop doesn't get averaged with a quick scratch script
+
+After a few records the system surfaces:
+
+- **p50** — the median AI-native time for this kind of task
+- **p90** — the conservative upper bound
+- **Human-time bias detection** — when an estimate is anchored on engineer
+  hours and the actual completion is far below it, it is flagged
+- **Next-estimate adjustment** — a multiplier the agent applies to its
+  *next* human-style estimate so the new number is calibrated, not guessed
 
 No raw prompts are stored. No data uploads. Normal records rotate at 200
-entries, rare cases at 20.
+entries; rare cases at 20.
 
-## Quick Start
+## Quick start
 
-With AiPlus already installed:
+If you already have AiPlus installed:
 
 ```bash
 cd MyProject
-aiplus install codex        # or: claude-code, opencode, all
+aiplus install codex          # or: claude-code, opencode, all
 aiplus velocity init
 ```
 
-Then use the CLI:
+Then the CLI:
 
 ```bash
-aiplus velocity init                      # Initialize velocity tracking
-aiplus velocity estimate                  # Create an AI-native estimate
-aiplus velocity complete                  # Record actual completion time
-aiplus velocity bias --task <id>          # Check bias for a specific task
-aiplus velocity report                    # Show overall bias and adjustment
-aiplus velocity doctor                    # Run velocity health checks
-aiplus velocity purge --yes               # Purge old records manually
+aiplus velocity init                       # initialize tracking
+aiplus velocity estimate                   # produce an AI-native estimate
+aiplus velocity complete                   # log the actual completion time
+aiplus velocity bias --task <id>           # check bias on a specific task
+aiplus velocity report                     # overall bias and adjustment
+aiplus velocity doctor                     # health checks
+aiplus velocity purge --yes                # manual purge of old records
 ```
 
-## What's Inside
+## What's inside
 
-- `core/schemas/` — JSON schemas for config, estimate-record, run-record, and
-  rare-case-record
-- `core/` — Duration parser, bias detection algorithms, retention logic
-- `DESIGN.md` — Architecture decisions and design rationale
+- `core/schemas/` — JSON schemas for `config`, `estimate-record`,
+  `run-record`, `rare-case-record`
+- `core/` — duration parser, bias detection, retention logic
+- `DESIGN.md` — architecture decisions and design rationale
 
 ## Storage
 
-All data stays in `.aiplus/velocity/` as local JSONL files:
+Everything stays in `.aiplus/velocity/` as plain local JSONL:
 
 ```
 .aiplus/velocity/
-  config.json           # Configuration
-  estimates.jsonl       # Estimate records
-  runs.jsonl            # Completion records
-  rare-cases.jsonl      # Rare case records
-  multipliers.json      # Aggregate adjustment multipliers
-  rotation-state.json   # Rotation tracking
+  config.json           # configuration
+  estimates.jsonl       # estimate records
+  runs.jsonl            # completion records
+  rare-cases.jsonl      # rare case records (large overestimate, owner gate, etc.)
+  multipliers.json      # aggregate adjustment multipliers
+  rotation-state.json   # rotation tracking
 ```
 
 - No SQLite. No database.
-- Normal records: keep latest 200
-- Rare cases: keep latest 20
-- Aggregate multipliers survive raw record rotation
+- Normal records: keep latest **200**.
+- Rare cases: keep latest **20**.
+- Aggregate multipliers survive raw record rotation, so the calibration
+  doesn't reset just because old runs aged out.
 
-## Safety Boundaries
+## Safety boundaries
 
 AiPlus Agent Velocity does not:
 
-- Store raw prompts, transcripts, or source code
-- Upload data or implement telemetry
-- Replace tests, review, or Owner gates
-- Act as a productivity tracker or KPI system
-- Make estimates shorter as an excuse to skip verification
+- store raw prompts, transcripts, or source code
+- upload data or implement telemetry
+- replace tests, review, or Owner gates
+- act as a productivity tracker or KPI dashboard
+- shorten estimates as an excuse to skip verification
 
-## More Info
+## More
 
-See the [main AiPlus repository](https://github.com/izhiwen/aiplus) for the
-complete platform.
-
-Current gaps and planned work:
-[v0.5.2 known gaps](https://github.com/izhiwen/aiplus/blob/main/docs/roadmap/v0.5.2-known-gaps.md).
+- Main platform: [aiplus](https://github.com/izhiwen/aiplus)
+- Tracked work before next release:
+  [v0.5.2 known gaps](https://github.com/izhiwen/aiplus/blob/main/docs/roadmap/v0.5.2-known-gaps.md)
 
 ## License
 
