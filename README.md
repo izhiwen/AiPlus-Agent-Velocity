@@ -104,11 +104,22 @@ AiPlus Agent Velocity does not:
 - act as a productivity tracker or KPI dashboard
 - shorten estimates as an excuse to skip verification
 
+## Honest disclosure
+
+- Single maintainer (Steve Zhiwen Wang, izhiwen on GitHub).
+- Bias-detection thresholds are heuristic. The p50/p90 calibration
+  needs roughly 30+ records of the same task-type to be reliable.
+  Smaller histories will produce noisy multipliers.
+- This module does **not** integrate with billing / cost APIs. It
+  measures time, not money. For token + dollar savings tracking, see
+  [AiPlus-Compact-Reminder](https://github.com/izhiwen/AiPlus-Compact-Reminder)
+  and `aiplus compact savings`.
+
 ## More
 
 - Main platform: [AiPlus](https://github.com/izhiwen/AiPlus)
 - Tracked work before next release:
-  [v0.5.2 known gaps](https://github.com/izhiwen/AiPlus/blob/main/docs/roadmap/v0.5.2-known-gaps.md)
+  [AiPlus release notes](https://github.com/izhiwen/AiPlus/releases)
 
 ## License
 

@@ -94,7 +94,7 @@ AiPlus Agent Velocity **不会**：
 
 - 主平台：[AiPlus](https://github.com/izhiwen/AiPlus)
 - 下次发布前要跟进的事：
-  [v0.5.2 known gaps](https://github.com/izhiwen/AiPlus/blob/main/docs/roadmap/v0.5.2-known-gaps.md)
+  [AiPlus release notes](https://github.com/izhiwen/AiPlus/releases)
 
 ## License
 
